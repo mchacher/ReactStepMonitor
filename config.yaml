@@ -1,0 +1,9 @@
+# yaml configuration file
+
+# system:
+#   heartbeat_period: 5
+#   alarm_period: 5
+#   reporting_period: 30 #broker status information reporting
+
+log:
+  level: info
