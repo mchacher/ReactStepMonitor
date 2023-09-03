@@ -7,7 +7,6 @@ import reactstepmonitor_config as lc
 
 
 class ReactStepMonitor:
-    MQTT_TOPIC_STATUS = "/Status"
 
     def exit_gracefully(self, signum, frame):
         """handle system message CTRL+C to properly stop threads and exit"""
