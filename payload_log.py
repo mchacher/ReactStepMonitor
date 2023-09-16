@@ -10,7 +10,6 @@ class LogLevel(Enum):
   LOG_LEVEL_INFO = 1
   LOG_LEVEL_WARNING = 2
   LOG_LEVEL_ERROR = 3
-  LOG_LEVEL_VERBOSE = 4
 
 class PayloadLog(ctypes.Structure):
     _pack_ = 1
