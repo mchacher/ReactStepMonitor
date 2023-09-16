@@ -10,6 +10,11 @@ from tkinter import font, messagebox, scrolledtext, ttk, filedialog
 import queue
 import asyncio
 
+
+# Define constants for file extensions
+SESSION_EXTENSION_FILENAME = "*.ses"
+WORKOUT_EXTENSION_FILENAME = "*.wkt"
+
 class QueueHandler(logging.Handler):
     """Class to send logging records to a queue
 
@@ -83,7 +88,7 @@ class ReactStepToolbox(tk.Tk):
         self.config(menu=self.menubar)
 
     def open_file(self):
-        file_path = filedialog.askopenfilename(filetypes=[("BIN Files", "*.bin")])
+        file_path = filedialog.askopenfilename(filetypes=[("ReactStep Files", f"{SESSION_EXTENSION_FILENAME} {WORKOUT_EXTENSION_FILENAME} .bin")])
         if file_path:
             self.start_file_transfer(file_path)
 
