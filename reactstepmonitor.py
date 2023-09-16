@@ -1,15 +1,18 @@
 import logging
 import time
 import signal
+import curses
 import threading
 import rsmaster as rs
-import reactstepmonitor_config as lc
+import reactstepmonitor_config as rc
 
 
 class ReactStepMonitor:
 
+    
     def exit_gracefully(self, signum, frame):
         """handle system message CTRL+C to properly stop threads and exit"""
+        logging.info("--------- EXIT_GRACEFULLY -------------")
         self.stop()
         logging.info("Exit")
 
@@ -17,7 +20,7 @@ class ReactStepMonitor:
         self.exit_now = False
         signal.signal(signal.SIGTERM, self.exit_gracefully)
         signal.signal(signal.SIGINT, self.exit_gracefully)
-        config = lc.LoRa2MQTTConfiguration()
+        config = rc.ReactStepMonitorConfig()
         self.worker = threading.Thread(
             target=self.worker_task, name="React Step Monitor worker thread"
         )
@@ -32,20 +35,25 @@ class ReactStepMonitor:
                 self.rsm.connect()
             time.sleep(1)
 
+
     def start(self):
         if not (self.worker.is_alive()):
             self.worker.start()
 
     def stop(self):
+        logging.info("---------- STOPPING ----------------")
         self.rsm.stop_communication()
         self.exit_now = True
         if self.worker.is_alive():
             self.worker.join()
             logging.info("%s is stopped", self.worker.name)
 
+def handle_upload(filename):
+    # Replace this with your actual upload logic
+    print(f"Uploading file: {filename}")
 
 if __name__ == "__main__":
-    if lc.LoRa2MQTTConfiguration().logging_level == "info":
+    if rc.ReactStepMonitorConfig().logging_level == "info":
         logging_level = logging.INFO
     else:
         logging_level = logging.DEBUG

@@ -3,7 +3,7 @@ from enum import IntEnum
 import ctypes
 import logging
 
-LOG_MESSAGE_SIZE = 255
+LOG_MESSAGE_SIZE = 128
 
 class LogLevel(Enum):
   LOG_LEVEL_DEBUG = 0
@@ -27,4 +27,3 @@ class PayloadLog(ctypes.Structure):
 
     def get_text_message(self):
        return self.log_message
-

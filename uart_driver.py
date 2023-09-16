@@ -1,7 +1,7 @@
 import sys
 import serial
 import logging
-
+import time
 
 class UartDriver:
     """UART data link layer implementation
@@ -29,6 +29,7 @@ class UartDriver:
             type (byte): the type of the serial packet
             payload (bytearray): the payload of the packet
         """
+        logging.debug("SEND_TX_BUFFER")
         data_length = int.to_bytes(
             len(payload), length=1, byteorder="big", signed=False
         )
@@ -56,9 +57,8 @@ class UartDriver:
             + txbuffer
             + bytearray(UartDriver.FLAG_STOP)
         )
-        logging.debug("Sending Tx Buffer: %s", txbuffer.hex(":"))
         self.serial_port.write(txbuffer)
-        self.serial_port.flush()
+        time.sleep(.050) #TODO to be better managed
 
     def get_rx_buffer(self):
         """processing incoming bytes on the uart - manage bytestuffing

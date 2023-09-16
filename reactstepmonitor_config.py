@@ -6,7 +6,7 @@ import logging
 import singleton_meta as sm
 
 
-class LoRa2MQTTConfiguration(metaclass=sm.SingletonMeta):
+class ReactStepMonitorConfig(metaclass=sm.SingletonMeta):
     CONFIG_FILE_NAME = "/config.yaml"
 
     def __init__(self):
