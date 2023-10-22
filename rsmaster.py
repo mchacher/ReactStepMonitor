@@ -14,6 +14,7 @@ import serial.tools.list_ports as list_ports
 import uart_driver as ud
 import payload_file as pf
 import payload_log as pl
+import payload_ack as pa
 
 RS_IDENTIFIER = "USB"
 
@@ -21,21 +22,30 @@ RS_IDENTIFIER = "USB"
 class SerialMsgType(Enum):
     NULL = 0
     LOG = 1
-    SYS = 2
+    COMMAND = 2
     FILE = 3
+    EVENT = 4
+    ACK = 5
+
+class CommandType(Enum):
+  CONNECT = 0
+  LIST_WORKOUTS = 1
+  LIST_SESSIONS = 2
 
 
 class RSMaster:
     """Serial API"""
 
     PYTHON_LIB_VERSION = "1.0.0"
-
+    QUEUE_SIZE = 10
+    
     def __init__(
         self, uart_driver=ud.UartDriver()
     ):
         self.uart_driver: ud.UartDriver = uart_driver
-        self.rx_fifo_sys = queue.Queue()
-        self.tx_fifo = queue.Queue()
+        self.rx_command_queue = queue.Queue(self.QUEUE_SIZE)
+        self.tx_fifo = queue.Queue(self.QUEUE_SIZE)
+        self.rx_ack_queue = queue.Queue(self.QUEUE_SIZE)
         self.log = True
 
     def get_python_lib_version():
@@ -60,6 +70,23 @@ class RSMaster:
     #         # logging.info("queue is empty")
     #         pass
 
+    def add_to_rx_sys_queue(self, packet):
+        """add packet to rx sys queue"""
+        try:
+            self.rx_sys_queue.put_nowait(packet)
+        except queue.Full:
+            self.rx_sys_queue.get_nowait()
+            self.rx_sys_queue.put_nowait(packet)
+    
+    def add_to_rx_ack_queue(self, packet):
+        """add packet to rx ack queue"""
+        try:
+            self.rx_ack_queue.put_nowait(packet)
+        except queue.Full:
+            self.rx_ack_queue.get_nowait()
+            self.rx_ack_queue.put_nowait(packet)
+
+
     def send_workout_file(self, file_path):
         try:
             with open(file_path, 'rb') as file:
@@ -83,9 +110,46 @@ class RSMaster:
                                  filename, payload.chunk_id + 1, payload.number_of_chunks,
                                  len(chunk_data))
                     self.uart_driver.send_tx_buffer(SerialMsgType.FILE.value, payload.serialize())
+                    # Wait for ack
+                    try:
+                        ack = self.rx_ack_queue.get(timeout=3)
+                        if ack[0] == pa.AckType.FILE_ERROR.value:
+                            error_message = "Error sending file: %s, chunk: %i/%i - file error ack received" % (filename, payload.chunk_id, payload.number_of_chunks)
+                            raise Exception(error_message)  # Raise an exception
+                        elif ack[0] == pa.AckType.FILE_OK.value:
+                            logging.info("Ack received")
+                        else:
+                            error_message = "Error sending file: %s, chunk: %i/%i - no valid ack received" % (filename, payload.chunk_id, payload.number_of_chunks)
+                            raise Exception(error_message)  # Raise an exception
+                    except queue.Empty:
+                        error_message = "Timeout waiting for ack. " + "Error sending file: %s, chunk: %i/%i" % (filename, payload.chunk_id, payload.number_of_chunks)
+                        raise Exception(error_message)  # Raise an exception
 
         except FileNotFoundError:
             logging.info(f"File not found: {file_path}")
+            raise FileNotFoundError(f"File not found: {file_path}") 
+
+    
+    def send_list_workout(self):
+        self.uart_driver.send_tx_buffer(SerialMsgType.COMMAND.value, bytearray([CommandType.LIST_WORKOUTS.value]))
+
+        received_data = []
+        try:
+            to = 1
+            while True:
+                file = self.rx_command_queue.get(timeout= to)
+                to = 0.2
+                received_data.append(file)
+        except queue.Empty:
+            if received_data:
+                full_response = b'\r\n'.join(received_data)  # Add carriage return between filenames
+                decoded_response = full_response[:-1].decode('ascii')
+                print(decoded_response)
+            else:
+                print("No response received.")
+    
+    def send_connect_request(self):
+        self.uart_driver.send_tx_buffer(SerialMsgType.COMMAND.value, bytearray([CommandType.CONNECT.value]))
 
     def __serial_rx(self):
         # Rx communication
@@ -94,15 +158,18 @@ class RSMaster:
             logging.debug("--- Rx: %s", rx)
         if (rx is not None) and (len(rx) > 5):
             if rx[3] == SerialMsgType.LOG.value:
-                log = pl.PayloadLog(rx[5:])
+                log = pl.PayloadLog(rx[5:len(rx)-1])
                 if self.log:
                     message = log.get_text_message()
                     logging.info("%s: %s", pl.LogLevel(log.level).name.rsplit("_", 1)[-1].ljust(10), message)
-            elif rx[3] == SerialMsgType.SYS.value:
-                pass
-                # logging.debug("System Dongle message: %s", rx.hex("-"))
-                # # put in the dongle system queue
-                # self.dongle_system.add_to_rx_queue(rx[5:])
+            elif rx[3] == SerialMsgType.COMMAND.value:
+                logging.debug("System message received: %s", rx.hex("-"))
+                self.rx_command_queue.put_nowait(rx[5:-1])
+                # put in system queue
+            elif rx[3] == SerialMsgType.ACK.value:
+                logging.debug("Ack message received: %s", rx[5:].hex("-"))
+                # put in system queue
+                self.add_to_rx_ack_queue(rx[5:])
 
     def __worker_task(self):
         while self.run:
@@ -127,11 +194,11 @@ class RSMaster:
 
     def stop_communication(self):
         """stop polling"""
-        logging.info("Stopping RS Master communication ...")
+        logging.info("Stopping React Sync communication ...")
         self.run = False
         if self.thread_uart.is_alive():
             self.thread_uart.join()
-        logging.info("RS Master communication stopped")
+        logging.info("React Sync communication stopped")
 
     def connect(self):
         """connect"""
@@ -142,14 +209,17 @@ class RSMaster:
                 if desc.find(RS_IDENTIFIER) != -1:
                     self.uart_driver.serial_port.port = port
         if not self.uart_driver.serial_port.port:
-            logging.info("React Step Master Not identified")
+            logging.info("React Sync Not identified")
             return False
         self.uart_driver.serial_port.open()
         logging.info(
-            "Connected to React Step Master: %s",
+            "Connected to React Sync: %s",
             self.uart_driver.serial_port.port,
         )
+
         self.start_communication()
+        logging.info("Sending connect request")
+        self.send_connect_request()
         return True
 
     def is_connected(self):

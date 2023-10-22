@@ -6,7 +6,7 @@ import logging
 
 
 class PayloadFile(ctypes.Structure):
-    FILE_NAME_SIZE   = 16
+    FILE_NAME_SIZE   = 20
     FILE_CHUNK_SIZE  = 196
 
     _pack_ = 2

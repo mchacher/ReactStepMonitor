@@ -1,29 +1,32 @@
 import logging
 import time
 import signal
-import curses
 import threading
 import rsmaster as rs
 import reactstepmonitor_config as rc
 
-import click
-from prompt_toolkit import PromptSession
-from prompt_toolkit.completion import WordCompleter
-from prompt_toolkit.history import FileHistory
+from prompt_toolkit import PromptSession, prompt
+from prompt_toolkit import print_formatted_text as print
 from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.completion import WordCompleter
 
-class ReactStepMonitor:
+command_completer = WordCompleter(['exit', 'list workout', 'command3'])
 
-    def exit_gracefully(self, signum, frame):
-        """handle system message CTRL+C to properly stop threads and exit"""
-        logging.info("--------- EXIT_GRACEFULLY -------------")
-        self.stop()
-        logging.info("Exit")
+from prompt_toolkit.styles import Style
+
+style = Style.from_dict({
+    # User input (default text).
+    '':          '#000000',
+
+    # Prompt.
+    'default': '#494C66',
+})
+
+class ReactPrompt:
+
 
     def __init__(self):
         self.exit_now = False
-        signal.signal(signal.SIGTERM, self.exit_gracefully)
-        signal.signal(signal.SIGINT, self.exit_gracefully)
         config = rc.ReactStepMonitorConfig()
         self.worker = threading.Thread(
             target=self.worker_task, name="React Step Monitor worker thread"
@@ -31,6 +34,30 @@ class ReactStepMonitor:
         # activate RS Master
         self.rsm = rs.RSMaster()
         self.rsm.connect()
+
+        session = PromptSession()
+        self.bindings = KeyBindings()
+
+        # Use a class method to define the 'c-t' binding
+        @self.bindings.add('c-c')
+        def _(event):
+            event.app.exit()
+            self.stop()
+
+        while not self.exit_now:
+            while not self.rsm.is_connected():
+                print(".")
+                time.sleep(1)
+                print("Connected to React Sync")
+                print("S/N: ...")
+                print("Firmware version: ...")
+                print("")
+            message = [('class:default', 'ReactStudioPrompt % ')]
+            command = session.prompt(message, key_bindings=self.bindings, completer=command_completer,style=style)
+            if command == "exit":
+                self.stop()
+            elif command == "list workout":
+                self.rsm.send_list_workout()
 
     def worker_task(self):
         while not self.exit_now:
@@ -45,7 +72,6 @@ class ReactStepMonitor:
             self.worker.start()
 
     def stop(self):
-        logging.info("---------- STOPPING ----------------")
         self.rsm.stop_communication()
         self.exit_now = True
         if self.worker.is_alive():
@@ -74,5 +100,5 @@ if __name__ == "__main__":
         "React Step Monitor Python Library: %s", rs.RSMaster.get_python_lib_version()
     )
     logging.info("----------------------------------------------")
-    rsmonitor = ReactStepMonitor()
-    rsmonitor.start()
+    rsprompt = ReactPrompt()
+    rsprompt.start()

@@ -25,4 +25,4 @@ class PayloadLog(ctypes.Structure):
           self.log_message = bytes(self.message).decode("utf-8")
 
     def get_text_message(self):
-       return self.log_message
+       return self.log_message.rstrip('\0')

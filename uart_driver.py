@@ -57,7 +57,9 @@ class UartDriver:
             + txbuffer
             + bytearray(UartDriver.FLAG_STOP)
         )
+        logging.debug("tx buffer: %s", txbuffer.hex(":"))
         self.serial_port.write(txbuffer)
+        self.serial_port.flush()
         time.sleep(.050) #TODO to be better managed
 
     def get_rx_buffer(self):
