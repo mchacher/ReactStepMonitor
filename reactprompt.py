@@ -11,16 +11,51 @@ from prompt_toolkit import print_formatted_text as print
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit import prompt
+from prompt_toolkit.completion import NestedCompleter
 
 command_handlers = [
     ('exit', 'exit React Prompt', 'stop', False),
-    ('list workout', 'list the workout in the react sync device', 'send_list_workout', False),
+    ('list workout', 'list the workout in the react sync device', 'list_workout', False),
+    ('list sessions', 'list the sessions in the react sync device', 'TODO', False),
     ('help', 'show this help', 'show_help', False),
     ('clear', 'clear the screen of the terminal', 'clear_screen', False),
-    ('del', 'delete a file pass as argument', 'delete_command', True)
+    ('del', 'delete a file passed as argument', 'delete_command', True),
+    ('put workout', 'transfer to react sync the workout file passed as argument', 'put_workout_command', True),
+    ('put session', 'transfer to react sync the session file passed as argument', 'TODO', True)
 ]
 
-command_completer = WordCompleter([command[0] for command in command_handlers])
+def generate_completer(command_handlers):
+    command_completer = {}
+    for command, description, handler, is_nested in command_handlers:
+        if ' ' in command:
+            parts = command.split(' ')
+            if parts[0] not in command_completer:
+                command_completer[parts[0]] = {}
+            if len(parts) > 1:
+                command_completer[parts[0]][parts[1]] = None
+        elif not is_nested:
+            command_completer[command] = None
+    print(command_completer)
+    return command_completer
+
+command_completer = NestedCompleter.from_nested_dict(generate_completer(command_handlers))
+
+
+
+# command_completer = NestedCompleter.from_nested_dict({
+#     'exit': None,
+#     'list': {
+#         'workout': None,
+#         'sessions': None
+#     },
+#     'help': None,
+#     'clear': None,
+#     'del': None,
+#     'put': {
+#         'workout': None,
+#         'sessions': None
+#     },
+# })
 
 from prompt_toolkit.styles import Style
 
@@ -123,8 +158,15 @@ class ReactPrompt:
             self.rsm.send_delete_file(argument)
         else:
             print(f"Invalid usage. Usage: del [file_name]")
+    
+    def put_workout_command(self, argument):
+        if argument:
+            print(f"Putting file: {argument}")
+            self.rsm.send_workout_file(argument)
+        else:
+            print(f"Invalid usage. Usage: put [file_name with fullpath]")
 
-    def send_list_workout(self):
+    def list_workout(self):
         self.rsm.send_list_workout()
 
 
