@@ -4,22 +4,30 @@ import signal
 import threading
 import rsmaster as rs
 import reactstepmonitor_config as rc
+import os
 
 from prompt_toolkit import PromptSession, prompt
 from prompt_toolkit import print_formatted_text as print
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.completion import WordCompleter
 
-command_completer = WordCompleter(['exit', 'list workout', 'command3'])
+commands = {
+    'exit': 'exit React Prompt',
+    'list workout': 'list the workout in the react sync device', 
+    'help': 'show this help',
+    'clear': 'clear the screen of the terminal'
+}
+
+command_completer = WordCompleter(commands.keys())
+
 
 from prompt_toolkit.styles import Style
 
 style = Style.from_dict({
     # User input (default text).
-    '':          '#000000',
-
+    '': '#000000',
     # Prompt.
-    'default': '#494C66',
+    'default': 'bold blue',
 })
 
 class ReactPrompt:
@@ -43,21 +51,31 @@ class ReactPrompt:
         def _(event):
             event.app.exit()
             self.stop()
-
+        print("")
+        print("--------------------------------------")
+        print("    React Studio - prompt version    ")
+        print("--------------------------------------")
+        print("")
+        while not self.rsm.is_connected():
+            print(".")
+            time.sleep(1)
         while not self.exit_now:
-            while not self.rsm.is_connected():
-                print(".")
-                time.sleep(1)
-                print("Connected to React Sync")
-                print("S/N: ...")
-                print("Firmware version: ...")
-                print("")
+
             message = [('class:default', 'ReactStudioPrompt % ')]
             command = session.prompt(message, key_bindings=self.bindings, completer=command_completer,style=style)
             if command == "exit":
                 self.stop()
             elif command == "list workout":
                 self.rsm.send_list_workout()
+            elif command == "help":
+                print("")
+                sorted_commands = sorted(commands.items())
+                max_command_length = max(len(command) for command, _ in sorted_commands)
+                for command, description in sorted_commands:
+                    print(f'{command.ljust(max_command_length)} | {description}')
+                print("")
+            elif command == "clear":
+                os.system('clear')
 
     def worker_task(self):
         while not self.exit_now:
