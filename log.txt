@@ -1,70 +1,33 @@
-Oct 22 20:22:25 ----------------------------------------------
-Oct 22 20:22:25 React Step Monitor Python Library: 1.0.0
-Oct 22 20:22:25 ----------------------------------------------
-Oct 22 20:22:25 Connected to React Sync: /dev/cu.usbmodem113301
-Oct 22 20:22:25 Sending connect request
-Oct 22 20:22:25 INFO      : serial api processing message
-Oct 22 20:22:25 INFO      : sys message received
-Oct 22 20:22:26 INFO      : [receive]: HB received from node: 11
-Oct 22 20:22:27 INFO      : serial api processing message
-Oct 22 20:22:27 INFO      : sys message received
-Oct 22 20:22:27 INFO      : List workout commands received
-Oct 22 20:22:27 INFO      : Workout 00: output.wkt
-Oct 22 20:22:27 INFO      : Workout 01: big.wkt
-Oct 22 20:22:27 INFO      : Workout 02: simple.wkt
-Oct 22 20:22:27 INFO      : Workout 03: simple_workout.wkt
-Oct 22 20:22:28 INFO      : [receive]: HB received from node: 11
-Oct 22 20:22:30 INFO      : [receive]: HB received from node: 11
-Oct 22 20:22:32 INFO      : [receive]: HB received from node: 11
-Oct 22 20:22:34 INFO      : [receive]: HB received from node: 11
-Oct 22 20:22:36 INFO      : [receive]: HB received from node: 11
-Oct 22 20:22:38 INFO      : [receive]: HB received from node: 11
-Oct 22 20:22:40 INFO      : [receive]: HB received from node: 11
-Oct 22 20:22:42 INFO      : [receive]: HB received from node: 11
-Oct 22 20:22:44 INFO      : [receive]: HB received from node: 11
-Oct 22 20:22:46 INFO      : [receive]: HB received from node: 11
-Oct 22 20:22:48 INFO      : [receive]: HB received from node: 11
-Oct 22 20:22:50 INFO      : [receive]: HB received from node: 11
-Oct 22 20:22:52 INFO      : [receive]: HB received from node: 11
-Oct 22 20:22:54 INFO      : [receive]: HB received from node: 11
-Oct 22 20:22:56 INFO      : [receive]: HB received from node: 11
-Oct 22 20:22:58 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:00 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:00 INFO      : serial api processing message
-Oct 22 20:23:00 INFO      : sys message received
-Oct 22 20:23:00 INFO      : List workout commands received
-Oct 22 20:23:00 INFO      : Workout 00: output.wkt
-Oct 22 20:23:00 INFO      : Workout 01: big.wkt
-Oct 22 20:23:00 INFO      : Workout 02: simple.wkt
-Oct 22 20:23:00 INFO      : Workout 03: simple_workout.wkt
-Oct 22 20:23:02 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:04 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:06 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:08 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:10 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:12 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:14 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:16 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:18 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:20 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:22 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:24 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:26 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:28 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:30 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:32 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:34 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:36 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:38 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:40 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:42 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:44 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:46 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:48 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:50 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:52 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:54 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:56 INFO      : [receive]: HB received from node: 11
-Oct 22 20:23:58 INFO      : [receive]: HB received from node: 11
-Oct 22 20:24:00 INFO      : [receive]: HB received from node: 11
-Oct 22 20:24:02 INFO      : [receive]: HB received from node: 11
+Oct 23 12:49:00 ----------------------------------------------
+Oct 23 12:49:00 React Step Monitor Python Library: 1.0.0
+Oct 23 12:49:00 ----------------------------------------------
+Oct 23 12:49:00 Connected to React Sync: /dev/cu.usbmodem113201
+Oct 23 12:49:00 Sending connect request
+Oct 23 12:49:00 INFO      : serial api processing message
+Oct 23 12:49:00 INFO      : sys message received
+Oct 23 12:49:02 INFO      : serial api processing message
+Oct 23 12:49:02 INFO      : sys message received
+Oct 23 12:49:11 INFO      : serial api processing message
+Oct 23 12:49:11 INFO      : sys message received
+Oct 23 12:49:11 INFO      : handle_commands: delete file command received
+Oct 23 12:49:11 INFO      : file_name: big.wkt
+Oct 23 12:49:11 INFO      : fs_delete_file
+Oct 23 12:49:11 INFO      : handle_commands: delete file processed
+Oct 23 12:49:15 INFO      : serial api processing message
+Oct 23 12:49:16 INFO      : sys message received
+Oct 23 12:49:38 INFO      : serial api processing message
+Oct 23 12:49:38 INFO      : sys message received
+Oct 23 12:49:39 INFO      : handle_commands: delete file command received
+Oct 23 12:49:39 INFO      : file_name: toot.wkt
+Oct 23 12:49:39 INFO      : fs_delete_file
+Oct 23 12:49:39 INFO      : handle_commands: delete file processed
+Oct 23 12:49:44 INFO      : serial api processing message
+Oct 23 12:49:44 INFO      : sys message received
+Oct 23 12:49:50 INFO      : serial api processing message
+Oct 23 12:49:50 INFO      : sys message received
+Oct 23 12:49:50 INFO      : handle_commands: delete file command received
+Oct 23 12:49:50 INFO      : file_name: output.wkt
+Oct 23 12:49:50 INFO      : fs_delete_file
+Oct 23 12:49:50 INFO      : handle_commands: delete file processed
+Oct 23 12:50:08 Stopping React Sync communication ...
+Oct 23 12:50:08 React Sync communication stopped

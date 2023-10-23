@@ -31,6 +31,7 @@ class CommandType(Enum):
   CONNECT = 0
   LIST_WORKOUTS = 1
   LIST_SESSIONS = 2
+  DELETE_FILE = 3
 
 
 class RSMaster:
@@ -43,6 +44,9 @@ class RSMaster:
         self, uart_driver=ud.UartDriver()
     ):
         self.uart_driver: ud.UartDriver = uart_driver
+        self.thread_uart = threading.Thread(
+            name="uart_thread", target=self.__worker_task
+        )
         self.rx_command_queue = queue.Queue(self.QUEUE_SIZE)
         self.tx_fifo = queue.Queue(self.QUEUE_SIZE)
         self.rx_ack_queue = queue.Queue(self.QUEUE_SIZE)
@@ -113,10 +117,10 @@ class RSMaster:
                     # Wait for ack
                     try:
                         ack = self.rx_ack_queue.get(timeout=3)
-                        if ack[0] == pa.AckType.FILE_ERROR.value:
+                        if ack[0] == pa.AckType.ERROR.value:
                             error_message = "Error sending file: %s, chunk: %i/%i - file error ack received" % (filename, payload.chunk_id, payload.number_of_chunks)
                             raise Exception(error_message)  # Raise an exception
-                        elif ack[0] == pa.AckType.FILE_OK.value:
+                        elif ack[0] == pa.AckType.OK.value:
                             logging.info("Ack received")
                         else:
                             error_message = "Error sending file: %s, chunk: %i/%i - no valid ack received" % (filename, payload.chunk_id, payload.number_of_chunks)
@@ -150,6 +154,23 @@ class RSMaster:
     
     def send_connect_request(self):
         self.uart_driver.send_tx_buffer(SerialMsgType.COMMAND.value, bytearray([CommandType.CONNECT.value]))
+
+    def send_delete_file(self, filename):
+        # Convert the filename string to bytes using ASCII encoding
+        filename_bytes = filename.encode('ascii')
+        filename_bytes += b'\0'
+        # Create a bytearray with the CommandType and the filename bytes
+        command = bytearray([CommandType.DELETE_FILE.value]) + filename_bytes
+        self.uart_driver.send_tx_buffer(SerialMsgType.COMMAND.value, command)
+        # Wait for ack
+        try:
+            ack = self.rx_ack_queue.get(timeout=2)
+            if ack[0] == pa.AckType.ERROR.value:
+                print("Error deleting file: %s" % filename)
+            elif ack[0] == pa.AckType.OK.value:
+                print("File: %s deleted" % filename)
+        except queue.Empty:
+           print("Error deleting file: %s" % filename)
 
     def __serial_rx(self):
         # Rx communication
@@ -185,9 +206,6 @@ class RSMaster:
     def start_communication(self):
         """ UART RX / TX communication thread start """
         logging.debug("Start communication")
-        self.thread_uart = threading.Thread(
-            name="uart_thread", target=self.__worker_task
-        )
         # self.thread_uart.daemon = True
         self.run = True
         self.thread_uart.start()
