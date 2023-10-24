@@ -131,7 +131,7 @@ class RSMaster:
 
         except FileNotFoundError:
             logging.info(f"File not found: {file_path}")
-            raise FileNotFoundError(f"File not found: {file_path}") 
+            raise Exception(f"File not found: {file_path}") 
 
     
     def send_list_workout(self):
@@ -141,16 +141,16 @@ class RSMaster:
         try:
             to = 1
             while True:
-                file = self.rx_command_queue.get(timeout= to)
+                file = self.rx_command_queue.get(timeout=to)
                 to = 0.2
                 received_data.append(file)
         except queue.Empty:
             if received_data:
                 full_response = b'\r\n'.join(received_data)  # Add carriage return between filenames
-                decoded_response = full_response[:-1].decode('ascii')
-                print(decoded_response)
+                decoded_response = full_response[:].decode('ascii')
+                return decoded_response.split('\r\n')
             else:
-                print("No response received.")
+                return []  # Return an empty list if no files are received
     
     def send_connect_request(self):
         self.uart_driver.send_tx_buffer(SerialMsgType.COMMAND.value, bytearray([CommandType.CONNECT.value]))
