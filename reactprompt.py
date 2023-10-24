@@ -9,9 +9,12 @@ import os
 from prompt_toolkit import PromptSession
 from prompt_toolkit import print_formatted_text as print
 from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.completion import WordCompleter
-from prompt_toolkit import prompt
 from prompt_toolkit.completion import NestedCompleter
+from prompt_toolkit.completion import PathCompleter
+from prompt_toolkit.completion import Completer
+from prompt_toolkit.document import Document
+
+
 
 command_handlers = [
     ('exit', 'exit React Prompt', 'stop', False),
@@ -24,22 +27,41 @@ command_handlers = [
     ('put session', 'transfer to react sync the session file passed as argument', 'TODO', True)
 ]
 
-def generate_completer(command_handlers):
-    command_completer = {}
-    for command, description, handler, is_nested in command_handlers:
-        if ' ' in command:
-            parts = command.split(' ')
-            if parts[0] not in command_completer:
-                command_completer[parts[0]] = {}
-            if len(parts) > 1:
-                command_completer[parts[0]][parts[1]] = None
-        elif not is_nested:
-            command_completer[command] = None
-    print(command_completer)
-    return command_completer
-
 command_completer = NestedCompleter.from_nested_dict(generate_completer(command_handlers))
+path_completer = PathCompleter(expanduser=True)
 
+class MyCustomCompleter(Completer):
+
+    def __init__(self):
+        self.path_completer = PathCompleter(expanduser=True)
+        self.command_completer = NestedCompleter.from_nested_dict(self.generate_completer(command_handlers))
+
+    def generate_completer(self, command_handlers):
+        command_completer = {}
+        for command, description, handler, is_nested in command_handlers:
+            if ' ' in command:
+                parts = command.split(' ')
+                if parts[0] not in command_completer:
+                    command_completer[parts[0]] = {}
+                if len(parts) > 1:
+                    command_completer[parts[0]][parts[1]] = None
+            elif not is_nested:
+                command_completer[command] = None
+        return command_completer
+    
+    def get_completions(self, document, complete_event):
+        text = document.text
+        words = text.split()
+        print("words = ", len(words))
+
+        if len(words) == 3:
+            sub_document = Document(words[2])
+            for suggestion in self.path_completer.get_completions(sub_document, complete_event):
+                yield suggestion
+        else:
+            for suggestion in self.command_completer.get_completions(document, complete_event):
+                print("command completer")
+                yield suggestion
 
 
 # command_completer = NestedCompleter.from_nested_dict({
@@ -106,7 +128,7 @@ class ReactPrompt:
         while not self.exit_now:
             message = [('class:default', 'ReactStudioPrompt % ')]
             command = session.prompt(
-                message, key_bindings=self.bindings, completer=command_completer, style=style
+                message, key_bindings=self.bindings, completer=MyCustomCompleter(), style=style
             )
 
             # Find the handler and execute it
@@ -161,13 +183,21 @@ class ReactPrompt:
     
     def put_workout_command(self, argument):
         if argument:
-            print(f"Putting file: {argument}")
-            self.rsm.send_workout_file(argument)
+            print(f"Sending file: {argument}")
+            try:
+                self.rsm.send_workout_file(argument)
+            except Exception as e:
+                print(e)                
         else:
             print(f"Invalid usage. Usage: put [file_name with fullpath]")
 
     def list_workout(self):
-        self.rsm.send_list_workout()
+        file_list = self.rsm.send_list_workout()
+        if file_list:
+            for filename in file_list:
+                print(filename)
+        else:
+            print("No workout file")
 
 
 if __name__ == "__main__":
