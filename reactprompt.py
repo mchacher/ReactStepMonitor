@@ -27,9 +27,6 @@ command_handlers = [
     ('put session', 'transfer to react sync the session file passed as argument', 'TODO', True)
 ]
 
-command_completer = NestedCompleter.from_nested_dict(generate_completer(command_handlers))
-path_completer = PathCompleter(expanduser=True)
-
 class MyCustomCompleter(Completer):
 
     def __init__(self):
@@ -52,15 +49,13 @@ class MyCustomCompleter(Completer):
     def get_completions(self, document, complete_event):
         text = document.text
         words = text.split()
-        print("words = ", len(words))
 
-        if len(words) == 3:
+        if len(words) == 3 and words[0] == 'put':
             sub_document = Document(words[2])
             for suggestion in self.path_completer.get_completions(sub_document, complete_event):
                 yield suggestion
         else:
             for suggestion in self.command_completer.get_completions(document, complete_event):
-                print("command completer")
                 yield suggestion
 
 
