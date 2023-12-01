@@ -16,7 +16,7 @@ import payload_file as pf
 import payload_log as pl
 import payload_ack as pa
 
-RS_IDENTIFIER = "USB"
+RS_IDENTIFIER = "RP2040"
 
 
 class SerialMsgType(Enum):
@@ -223,7 +223,7 @@ class RSMaster:
         if not self.uart_driver.serial_port.port:
             ports = list_ports.comports()
             for port, desc, hw in ports:
-                logging.debug("description: %s", desc)
+                logging.info("description: %s", desc)
                 if desc.find(RS_IDENTIFIER) != -1:
                     self.uart_driver.serial_port.port = port
         if not self.uart_driver.serial_port.port:
